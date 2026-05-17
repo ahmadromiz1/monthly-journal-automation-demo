@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Monthly Journal Automation Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">Internal Tool Simulation</p>
+            <h1>Monthly Journal Automation Demo</h1>
+        </div>
+        <div class="topbar-actions">
+            <span class="user-chip">{{ current_user }}</span>
+            <form action="/logout" method="post">
+                <button class="secondary" type="submit">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="page-grid">
+        <section class="panel">
+            <h2>Upload Monthly Reconciliation Workbook</h2>
+            <p>Upload a sanitized Excel workbook with AC and SR sheets. The worker will read, validate, export partner packs, and generate ZIP output.</p>
+            <div class="alert warn">
+                Upload only creates a queued job. To move it from <strong>Waiting Queue</strong> into processing, run <code>python scripts/run_worker.py</code> or use the manual <strong>Process Queued Jobs Now</strong> button below.
+            </div>
+            <form action="/jobs/upload" method="post" enctype="multipart/form-data" class="stack">
+                <label>
+                    <span>Select .xlsx file</span>
+                    <input type="file" name="file" accept=".xlsx" required>
+                </label>
+                <button type="submit">Create Processing Job</button>
+            </form>
+            {% if sample_file %}
+            <form action="/jobs/upload-sample" method="post" class="inline-form">
+                <button class="secondary" type="submit">Use Generated Sample Workbook</button>
+            </form>
+            {% endif %}
+            <form action="/jobs/process-now" method="post" class="inline-form">
+                <button type="submit">Process Queued Jobs Now</button>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2>Demo Program Flow</h2>
+            <div class="flow-grid">
+                <article class="mini-panel">
+                    <strong>1. Upload</strong>
+                    <p>Workbook AC dan SR masuk ke storage job lokal.</p>
+                </article>
+                <article class="mini-panel">
+                    <strong>2. Queue + Worker</strong>
+                    <p>Job masuk `Waiting Queue`, lalu worker ubah ke `Processing` dan menjalankan pipeline.</p>
+                </article>
+                <article class="mini-panel">
+                    <strong>3. Validation + Journaling</strong>
+                    <p>Sistem cek mismatch, partner balance, dan warning jurnal di tiga stage simulasi.</p>
+                </article>
+                <article class="mini-panel">
+                    <strong>4. Result Review</strong>
+                    <p>UI menampilkan review notes, file output per partner, log validation, dan ZIP archive.</p>
+                </article>
+            </div>
+            {% if sample_file %}
+            <div class="mini-panel">
+                <strong>Generated Sample Input</strong>
+                <p>Use this workbook as the initial AC/SR source file for the demo pipeline.</p>
+                <div class="action-row">
+                    <span class="meta">{{ sample_input_name }}</span>
+                    <a class="secondary-link" href="{{ sample_input_download_url }}">Download Sample Input</a>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="panel full-span">
+            <h2>Job Queue</h2>
+            <p>Status values: Waiting Queue, Processing, Completed, and Failed. Completed jobs with notes are highlighted as Completed with Review Notes.</p>
+            <div class="job-list">
+                {% if jobs %}
+                    {% for job in jobs %}
+                    <a class="job-card" href="/jobs/{{ job.id }}">
+                        <div class="job-card-head">
+                            <strong>{{ job.filename }}</strong>
+                            <span class="status {{ job.status }}">{{ job.status_label }}</span>
+                        </div>
+                        <div class="meta">Job Key: {{ job.job_key }}</div>
+                        <div class="meta">Created By: {{ job.created_by }}</div>
+                        <div class="meta">Created At: {{ job.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                        <div class="meta">Retry Count: {{ job.retry_count }}</div>
+                        <div class="action-row compact-row">
+                            <span class="meta">Input Source: {{ job.input_file.name }}</span>
+                            {% if job.input_file.exists == 'true' %}
+                            <a class="secondary-link" href="{{ job.input_file.download_url }}">Download Input</a>
+                            {% endif %}
+                        </div>
+                        {% if job.status == 'waiting' %}
+                        <div class="meta">Worker has not picked this job yet. Open detail or click Process Queued Jobs Now.</div>
+                        {% elif job.status == 'processing' %}
+                        <div class="meta">Processing is running. Refresh detail page to monitor progress.</div>
+                        {% else %}
+                        <div class="meta">Open detail to review notes, generated files, and per-file downloads.</div>
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">No jobs yet. Generate sample data first or upload a workbook.</div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

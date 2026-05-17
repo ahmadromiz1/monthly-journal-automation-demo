@@ -1,0 +1,28 @@
+services:
+  web:
+    build: .
+    container_name: monthly-journal-demo-web
+    command: sh -c "python scripts/generate_sample_data.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: docker
+      DATABASE_URL: sqlite:////app/storage/monthly_journal.db
+      WORKER_POLL_SECONDS: 5
+    volumes:
+      - ./storage:/app/storage
+      - ./sample_data:/app/sample_data
+
+  worker:
+    build: .
+    container_name: monthly-journal-demo-worker
+    command: sh -c "python scripts/generate_sample_data.py && python scripts/run_worker.py"
+    depends_on:
+      - web
+    environment:
+      APP_ENV: docker
+      DATABASE_URL: sqlite:////app/storage/monthly_journal.db
+      WORKER_POLL_SECONDS: 5
+    volumes:
+      - ./storage:/app/storage
+      - ./sample_data:/app/sample_data

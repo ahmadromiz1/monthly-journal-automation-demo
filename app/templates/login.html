@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Monthly Journal Automation Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body class="auth-body">
+    <main class="auth-shell">
+        <section class="auth-panel">
+            <p class="eyebrow">Finance Automation Demo</p>
+            <h1>Monthly Journal Automation</h1>
+            <p class="lead">Dummy internal-tool simulation for monthly reconciliation uploads, journal validation, and ZIP result packaging.</p>
+            <div class="info-grid">
+                <article class="mini-panel">
+                    <h3>Demo Flow</h3>
+                    <p>Upload workbook AC/SR, create queued job, process with worker, validate rows and partner totals, then package result into downloadable files.</p>
+                </article>
+                <article class="mini-panel">
+                    <h3>Journaling Simulation</h3>
+                    <p>Each partner output includes Sales Journal, Reconciliation stage, and Tax or Commission invoice simulation inside `JOURNAL_RECONCILIATION`.</p>
+                </article>
+                <article class="mini-panel">
+                    <h3>UI Review</h3>
+                    <p>After processing, you can review mismatch notes, agent balance issues, journal warnings, and download ZIP or each generated file directly.</p>
+                </article>
+            </div>
+            <div class="credential-box">
+                <span>Demo Username</span>
+                <strong>finance.demo</strong>
+                <span>Demo Password</span>
+                <strong>demo12345</strong>
+            </div>
+        </section>
+        <section class="auth-form-panel">
+            <h2>Dummy Login</h2>
+            {% if error %}
+            <div class="alert error">{{ error }}</div>
+            {% endif %}
+            <form action="/login" method="post" class="stack">
+                <label>
+                    <span>Username</span>
+                    <input type="text" name="username" value="finance.demo" required>
+                </label>
+                <label>
+                    <span>Password</span>
+                    <input type="password" name="password" value="demo12345" required>
+                </label>
+                <button type="submit">Sign In</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

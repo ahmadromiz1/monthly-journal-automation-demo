@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Detail | Monthly Journal Automation Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+    {% if is_pending %}
+    <meta http-equiv="refresh" content="5">
+    {% endif %}
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">Job Detail</p>
+            <h1>{{ job.original_filename }}</h1>
+        </div>
+        <div class="topbar-actions">
+            <a class="secondary-link" href="/dashboard">Back to Dashboard</a>
+            <span class="user-chip">{{ current_user }}</span>
+        </div>
+    </header>
+
+    <main class="detail-grid">
+        <section class="panel">
+            <div class="status-banner">
+                <span class="status {{ job.status }}">{{ display_status }}</span>
+            </div>
+            <p class="subtle-copy">This page is the review surface for the generated job. You can inspect validation notes directly here, then download ZIP or each output file individually.</p>
+            {% if job.status == 'waiting' %}
+            <div class="alert warn">
+                This job is still queued and has not started. Start the background worker with <code>python scripts/run_worker.py</code> or use the manual process button below.
+            </div>
+            {% elif job.status == 'processing' %}
+            <div class="alert info">
+                Processing is in progress. This page auto-refreshes every 5 seconds until the job finishes.
+            </div>
+            {% endif %}
+            <dl class="detail-list">
+                <div><dt>Job Key</dt><dd>{{ job.job_key }}</dd></div>
+                <div><dt>Submitted By</dt><dd>{{ job.created_by }}</dd></div>
+                <div><dt>Created At</dt><dd>{{ job.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd></div>
+                <div><dt>Started At</dt><dd>{{ job.started_at.strftime('%Y-%m-%d %H:%M:%S') if job.started_at else '-' }}</dd></div>
+                <div><dt>Completed At</dt><dd>{{ job.completed_at.strftime('%Y-%m-%d %H:%M:%S') if job.completed_at else '-' }}</dd></div>
+                <div><dt>Input Workbook</dt><dd>{{ input_file.name }}</dd></div>
+                <div><dt>Output Directory</dt><dd>{{ job.output_dir }}</dd></div>
+                <div><dt>Error Message</dt><dd>{{ job.error_message or '-' }}</dd></div>
+            </dl>
+            <div class="action-row">
+                {% if input_file.exists == 'true' %}
+                <a class="secondary-link" href="{{ input_file.download_url }}">Download Input Workbook</a>
+                {% endif %}
+                {% if download_ready %}
+                <a class="button-link" href="/jobs/{{ job.id }}/download">Download ZIP Archive</a>
+                {% endif %}
+                {% if job.status == 'waiting' %}
+                <form action="/jobs/{{ job.id }}/process-now" method="post">
+                    <button type="submit">Process This Queue Now</button>
+                </form>
+                {% endif %}
+                {% if job.status == 'failed' %}
+                <form action="/jobs/{{ job.id }}/retry" method="post">
+                    <button class="secondary" type="submit">Retry Failed Job</button>
+                </form>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Review Summary</h2>
+            {% if notes %}
+            <ul class="notes-list">
+                {% for note in notes %}
+                <li>{{ note }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state">No review notes generated for this job.</div>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <h2>Validation Review</h2>
+            <div class="review-grid">
+                <article class="mini-panel">
+                    <h3>Row Validation Log</h3>
+                    {% if row_logs %}
+                    <ul class="notes-list compact">
+                        {% for note in row_logs %}
+                        <li>{{ note }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="empty-state">No row-level mismatches.</div>
+                    {% endif %}
+                </article>
+                <article class="mini-panel">
+                    <h3>Agent Summary Log</h3>
+                    {% if agent_logs %}
+                    <ul class="notes-list compact">
+                        {% for note in agent_logs %}
+                        <li>{{ note }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="empty-state">No partner-level imbalance.</div>
+                    {% endif %}
+                </article>
+                <article class="mini-panel">
+                    <h3>Journal Validation Log</h3>
+                    {% if journal_logs %}
+                    <ul class="notes-list compact">
+                        {% for note in journal_logs %}
+                        <li>{{ note }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="empty-state">No journal warning notes.</div>
+                    {% endif %}
+                </article>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Output Files</h2>
+            {% if output_files %}
+            <ul class="files-list">
+                {% for file in output_files %}
+                <li class="file-item">
+                    <div>
+                        <strong>{{ file.name }}</strong>
+                        <div class="meta">
+                            {% if file.kind == 'log' %}
+                            Validation log file
+                            {% else %}
+                            Partner workbook output
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if file.exists == 'true' %}
+                    <a class="secondary-link" href="{{ file.download_url }}">Download File</a>
+                    {% else %}
+                    <span class="meta">Not ready</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state">Output files will appear after processing completes.</div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>
