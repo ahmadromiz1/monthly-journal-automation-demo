@@ -1,5 +1,10 @@
 # Monthly Journal Automation Demo
 
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Web_App-green)
+![Pandas](https://img.shields.io/badge/Pandas-Data_Processing-orange)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue)
+
 Monthly Journal Automation Demo is a sanitized portfolio repository that simulates a finance internal tool for monthly reconciliation processing, journal validation, partner-level Excel generation, and ZIP archive packaging.
 
 Monthly Journal Automation Demo adalah repository portfolio yang sudah disanitasi untuk mensimulasikan internal finance tool yang memproses rekonsiliasi bulanan, validasi jurnal, generate file Excel per partner, dan packaging hasil dalam ZIP archive.
@@ -362,6 +367,10 @@ This repository is a simulation of a finance workflow automation system for port
 
 Repository ini adalah simulasi sistem otomasi workflow finance untuk keperluan portfolio dan interview. Workflow produksi yang sebenarnya jauh lebih kompleks, menangani file mentah yang jauh lebih besar, menggunakan format jurnal asli, dan memiliki business rules serta exception handling yang lebih ketat dibanding yang ditampilkan di sini.
 
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
+
 ## Future Improvements | Pengembangan Berikutnya
 
 - replace polling worker with queue-based orchestration
@@ -369,4 +378,4 @@ Repository ini adalah simulasi sistem otomasi workflow finance untuk keperluan p
 - add PostgreSQL profile for shared environments
 - add test coverage for web routes and download flows
 - add preview tables for AC/SR input sheets directly in the UI
-- add CI pipeline for automated validation
+- expand CI coverage for automated validation
